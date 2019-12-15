@@ -20,6 +20,13 @@
 
 ```
 
+## Docker
+
+- Subir imagem da nossa API
+  ![](imagens/docker.PNG)
+- Subindo o Postgres
+  `docker run --name database -e POSTGRES_PASSWORD=docker -p 5432:5432 -d postgres:11`
+
 ## ORM
 
 - Abstração do banco de dados
@@ -47,7 +54,15 @@
   - Retorno ao cliente - JSON nas APIs ou HTML.
 - Controller
 
-  - Ponto de entrada das requisições da aplicação. Uma rota geralmente está associada a um método do controller. Onde as regras de negócio ficam.
+  - Ponto de entrada das requisições da aplicação. Uma rota geralmente está associada a um método do controller.
+  - Onde as regras de negócio ficam.
+  - Sempre retorna um JSON
+  - Métodos
+    - index
+    - show
+    - store
+    - update
+    - delete
 
 - ![](imagens/controller.png)
 
@@ -125,10 +140,105 @@
   };
   ```
 
-  - Estrutura de pastas requerida
-    ![](imagens/pastas.png)
+  - Criando uma Migration
+    `npx sequelize migration:create --name=create-users` - Estrutura da Migration - definição do model
+
+    ```javascript
+    module.exports = {
+      up: (queryInterface, Sequelize) => {
+        return queryInterface.createTable('users', {
+          id: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            autoIncrement: true,
+            primaryKey: true,
+          },
+          name: {
+            type: Sequelize.STRING,
+            allowNull: false,
+          },
+          email: {
+            type: Sequelize.STRING,
+            allowNull: false,
+            unique: true,
+          },
+          password_hash: {
+            type: Sequelize.STRING,
+            allowNull: false,
+          },
+          provider: {
+            type: Sequelize.BOOLEAN,
+            defaultValue: false,
+            allowNull: false,
+          },
+          created_at: {
+            type: Sequelize.DATE,
+            allowNull: false,
+          },
+          updated_at: { type: Sequelize.DATE, allowNull: false },
+        });
+      },
+
+      down: queryInterface => {
+        return queryInterface.dropTable('users');
+      },
+    };
+    ```
+
+* Desfazer uma migration - todas
+  `npx sequelize db:migrate:undo(:all)`
+* Criando um Model
+
+```javascript
+import Sequelize, { Model } from 'sequelize';
+
+class User extends Model {
+  static init(sequelize) {
+    super.init(
+      {
+        name: Sequelize.STRING,
+        email: Sequelize.STRING,
+        password_hash: Sequelize.STRING,
+        provider: Sequelize.BOOLEAN,
+      },
+      {
+        sequelize,
+      }
+    );
+  }
+}
+export default User;
+```
+
+- Arquivo database/index.js
+  - Mapeando todos os models para inserir o objeto connection
+
+```javascript
+import Sequelize from 'sequelize';
+import User from '../app/models/User';
+import databaseConfig from '../config/database';
+const models = [User];
+class Database {
+  constructor() {
+    this.init();
+  }
+  init() {
+    this.connection = new Sequelize(databaseConfig);
+    models.map(model => model.init(this.connection));
+  }
+}
+
+export default new Database();
+```
+
+- Estrutura de pastas requerida
+  ![](imagens/pastas.png)
 
 ## Misc
 
 - Ver logs no docker
   `docker logs nomedaimagem`
+
+```
+
+```
