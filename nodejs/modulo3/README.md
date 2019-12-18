@@ -403,8 +403,3 @@ export default new ProviderController();
     "date": "2019-07-01T18:00:00-03:00"
   }
   ```
-  // até aula 5
-
-## Redis
-
-## Nodemailer
