@@ -360,36 +360,41 @@ export default new ProviderController();
 
 - Crie um controller para lidar com o agendamento
 
-  ```
-    import Appointment from './models/Appointment';
-    import User from './models/User';
-    import * as Yup from 'yup'
+  ```javascript
+  import Appointment from './models/Appointment';
+  import User from './models/User';
+  import * as Yup from 'yup';
 
-    class AppointmentController {
-      async store(req, res){
-        const schema = Yup.object().shape({
-          date: Yup.date().required(),
-          provider_id: Yup.number().required(),
-        })
-        if(!(await schema.isValid(req.body))){
-          return res.status(400).json({error: 'Dados enviados estão incorretos. Reveja os dados'});
-
-        }
-        const {provider_id, date} = req.body;
-        //checar se o provider_id pertence a um provider
-        const isProvider = await User.findOne({where: {id: provider_id, provider: true}});
-        if(!isProvider){
-          return res.status(401).json({error: 'O id informado não pertence a um prestador de serviços'})
-        }
-        const appointment = await Appointment.create({
-          user_id: req.userId, //não está funcionando
-          provider_id,
-          date
-        })
-        return res.json(appointment);
+  class AppointmentController {
+    async store(req, res) {
+      const schema = Yup.object().shape({
+        date: Yup.date().required(),
+        provider_id: Yup.number().required(),
+      });
+      if (!(await schema.isValid(req.body))) {
+        return res
+          .status(400)
+          .json({ error: 'Dados enviados estão incorretos. Reveja os dados' });
       }
+      const { provider_id, date } = req.body;
+      //checar se o provider_id pertence a um provider
+      const isProvider = await User.findOne({
+        where: { id: provider_id, provider: true },
+      });
+      if (!isProvider) {
+        return res.status(401).json({
+          error: 'O id informado não pertence a um prestador de serviços',
+        });
+      }
+      const appointment = await Appointment.create({
+        user_id: req.userId, //não está funcionando
+        provider_id,
+        date,
+      });
+      return res.json(appointment);
     }
-    export default new AppointmentController();
+  }
+  export default new AppointmentController();
   ```
 
 - Crie a rota para responder por esse controller
@@ -402,6 +407,246 @@ export default new ProviderController();
     "provider_id": 3,
     "date": "2019-07-01T18:00:00-03:00"
   }
+  ```
+
+## Validações do agendamento
+
+- Adicione o date-fns: `yarn add date-fns@next`
+- Ações
+
+  ```javascript
+  import { startOfHour, parseISO, isBefore } from 'date-fns';
+  //..
+  const hourStart = startOfHour(parseISO(date));
+  // vendo se data pedida < hoje
+  if (isBefore(hourStart, new Date())) {
+    return res.status(400).json({ error: 'Datas passadas não são permitidas' });
+  }
+  const checkAvailability = await Appointment.findOne({
+    where: { provider_id, canceled_at: null, date: hourStart },
+  });
+  if (checkAvailability) {
+    return res.status(400).json({ error: 'Data não disponível' });
+  }
+  ```
+
+- No momento da criação do appointment, passamos agora o hourStart
+
+  ```javascript
+  const appointment = await Appointment.create({
+    user_id: req.userId, //não está funcionando
+    provider_id,
+    date: hourStart,
+  });
+  ```
+
+## Listagem dos agendamentos
+
+- Listagem simples
+
+  - Crie o método index no controller e exponha a rota correspondente
+
+  ```javascript
+    async index(req, res) {
+      const appointments = await Appointment.findAll({
+       where: { user_id: req.userId, canceled_at: null },
+      });
+     return res.json(appointments);
+    }
+
+  ```
+
+  - Ordenando por data
+
+  ```javascript
+  const appointments = await Appointment.findAll({
+    where: { user_id: req.userId, canceled_at: null },
+    order: ['date'],
+  });
+  ```
+
+  - Adicionando dados do provider
+
+  ```javascript
+  const appointments = await Appointment.findAll({
+    where: { user_id: req.userId, canceled_at: null },
+    order: ['date'],
+    include: [
+      {
+        model: User,
+        as: 'provider',
+        attributes: ['id', 'name'],
+      },
+    ],
+  });
+  ```
+
+  - Adicionando dados do user
+
+  ```javascript
+  const appointments = await Appointment.findAll({
+    where: { user_id: req.userId, canceled_at: null },
+    order: ['date'],
+    attributes: ['id', 'date'],
+    include: [
+      {
+        model: User,
+        as: 'provider',
+        attributes: ['id', 'name'],
+      },
+    ],
+  });
+  ```
+
+  - Incluindo o avatar
+
+  ```javascript
+  const appointments = await Appointment.findAll({
+    where: { user_id: req.userId, canceled_at: null },
+    order: ['date'],
+    attributes: ['id', 'date'],
+    include: [
+      {
+        model: User,
+        as: 'provider',
+        attributes: ['id', 'name'],
+        include: [
+          { model: File, as: 'avatar', attributes: ['id', 'path', 'url'] },
+        ],
+      },
+    ],
+  });
+  ```
+
+## Paginação
+
+- Alterar o index para pegar as informações de pagina
+
+```javascript
+  async index(req, res) {
+  // paginação
+  const { page = 1 } = req.query; // insomnia: page: 2 na aba Query
+
+  const appointments = await Appointment.findAll({
+    where: { user_id: req.userId, canceled_at: null },
+    order: ['date'],
+    limit: 20, // limita a quantidade de registros do retorno por vez
+    offset: (page - 1) * 20, // me diz o quanto devo pular em cada execução
+    attributes: ['id', 'date'],
+    include: [
+      {
+        model: User,
+        as: 'provider',
+        attributes: ['id', 'name'],
+        include: [
+          { model: File, as: 'avatar', attributes: ['id', 'path', 'url'] },
+        ],
+      },
+    ],
+  });
+
+```
+
+## Listando os appointments do PRESTADOR
+
+- Crie um novo controller com a seguinte estrutrura.
+
+  ```javascript
+  import { Op } from 'sequelize';
+  import { startOfDay, endOfDay, parseISO } from 'date-fns';
+  import Appointment from '../models/Appointment';
+  import User from '../models/User';
+  class ScheduleController {
+    async index(req, res) {
+      const checkProvider = await User.findOne({
+        where: { id: req.userId, provider: true },
+      });
+      if (!checkProvider) {
+        return res
+          .status(401)
+          .json({ error: 'Usuário logado não é um prestador de serviços' });
+      }
+      const { date } = req.query;
+      const parsedDate = parseISO(date);
+
+      const appointments = await Appointment.findAll({
+        where: {
+          provider_id: req.userId,
+          canceled_at: null,
+          date: {
+            [Op.between]: [startOfDay(parsedDate), endOfDay(parsedDate)],
+          },
+        },
+        order: ['date'],
+      });
+
+      res.json(appointments);
+    }
+  }
+  export default new ScheduleController();
+  ```
+
+## Adicionando o MongoDB ao projeto
+
+- Subindo uma imagem do Mongo via Docker
+  `docker run --name mongobarber -p27017:27017 -d -t mongo`
+- Adicionando Mongoose
+  `yarn add mongoose`
+  \_ Adicionando as configurações do Mongo na config de database
+
+  ```javascript
+    constructor() {
+      this.init();
+      this.mongo();
+    }
+    //...
+     mongo() {
+        this.mongoConnection = mongoose.connect(
+        'mongodb://localhost:27017/gobarber',
+        { useNewUrlParser: true,  useUnifiedTopology: true }
+        );
+    }
+
+  ```
+
+- Criando os schemas (models do mongo)
+
+  ```javascript
+  import mongoose from 'mongoose';
+  const NotificationSchema = new mongoose.Schema(
+    {
+      content: {
+        type: String,
+        required: true,
+      },
+      user: {
+        type: Number,
+        required: true,
+      },
+      read: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
+    },
+    { timestamps: true }
+  );
+  export default mongoose.model('Notification', NotificationSchema);
+  ```
+
+- Notificando o usuário no controller de appointment
+
+  ```javascript
+  //Notificar o user
+  const user = await User.findByPk(req.userId);
+  //dia 19 de Dezembro às 12:00h
+  const formattedDate = format(hourStart, "'dia' dd 'de' MMMM', às' H:mm'h'", {
+    locale: pt,
+  });
+  await Notification.create({
+    content: `Novo agendamento de ${user.name} para ${formattedDate}  `,
+    user: provider_id,
+  });
   ```
 
 ## FIM
