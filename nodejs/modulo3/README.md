@@ -649,4 +649,283 @@ export default new ProviderController();
   });
   ```
 
+## Listando as notificações dos usuários
+
+- Crie a rota para responder as requisições
+  `routes.get('/notifications', NotificationController.index);`
+- Crie o controller e o método associado
+
+```javascript
+import Notification from '../schemas/Notification';
+class NotificationController {
+  async index(req, req) {
+    return res.json({ ok: true });
+  }
+}
+export default new NotificationController();
+```
+
+- Crie a requisição no Insomnia para teste
+  - Método get e token de prestador informado
+- Limitando o acesso à rota - cheque se o user é provider
+  ```javascript
+  const checkIsProvider = await User.findOne({
+    where: {
+      id: req.userId,
+      provider: true,
+    },
+  });
+  if (!checkIsProvider) {
+    return res
+      .status(401)
+      .json({ error: 'Só prestadores de serviço podem listar notificações' });
+  }
+  ```
+- Fazendo o select das notificações - Mongo não tem findAll()
+
+  ```javascript
+  const notifications = await Notification.find({
+    user: req.userId,
+  })
+    .sort('createdAt')
+    .limit(20);
+  ```
+
+## Marcando as notificações como lidas
+
+- Crie uma rota de PUT/:id para alterar o status da notification
+
+- Crie o método update no controller de Notification
+
+  ```javascript
+      async update(req, res) {
+        //buscar  a notificação - estilo newba
+        //const notification = await Notification.findById(req.params.id);
+        // estilo ninja
+        /**
+        * (id, {dado a alterar})
+        * new: retorna a nova notificação alterada
+        */
+        const notification = await Notification.findByIdAndUpdate(
+          req.params.id,
+          { read: true },
+          { new: true }
+        );
+        if (!notification) {
+          res.status(400).json({
+            error: 'Não foi encontrada notificação a partir dos dados informados',
+          });
+        }
+        return res.json(notification);
+    }
+  ```
+
+## Cancelamento de agendamento
+
+- Crie a rota to tipo delete com o id no params
+  `routes.delete('/appointments/:id', AppointmentController.delete);`
+- Crie um controller de deleção no AppointmentController
+  ```javascript
+      async delete(req, res) {
+        const appointment = await Appointment.findByPk(req.params.id);
+        // verificando se o user que enviou a deleção é dono do appointment
+        if (appointment.user_id !== req.userId) {
+          return res.status(401).json({
+            error: 'Você não está autorizado a deletar esse agendamento. ',
+          });
+        }
+        // data -2h
+        /**
+         * Caso de teste:
+        * data do appointment: 13h
+        * dateWithSub = 13-2 => 11h
+        * now: 11:25
+        * result: DON'T allow deletion
+        */
+        const dateWithSub = subHours(appointment.date, 2);
+        if (isBefore(dateWithSub, new Date())) {
+          res.status(401).json({
+            error:
+              'Você só pode deletar agendamentos com pelo menos 2h de antecedência',
+          });
+        }
+        appointment.canceled_at = new Date();
+        appointment.save();
+        return res.json(appointment);
+    }
+  ```
+
+## Nodemailer
+
+- Envio de Emails
+- Instalação
+  `yarn add nodemailer`
+- Crie um arquivo de configuração para o host `config/mail.js`
+
+  ```javascript
+  export default {
+    host: 'smtp.mailtrap.io',
+    port: 2525,
+    secure: false,
+    auth: {
+      user: 'e5927f17824654',
+      pass: '6df68d0c54d3de',
+    },
+    default: {
+      from: 'GoBarber <noreply@gobarber.com>',
+    },
+  };
+  ```
+
+- Configurando o Transporter do Nodemailer
+
+  - Crie uma pasta _`lib`_ na pasta _`src`_ com uma classe Mail
+
+    ```javascript
+    import nodemailer from 'nodemailer';
+    import mailConfig from '../config/mail';
+    class Mail {
+      constructor() {
+        const { host, port, secure, auth } = mailConfig;
+        this.transporter = nodemailer.createTransport({
+          host,
+          port,
+          secure,
+          auth: auth.user ? auth : null,
+        });
+      }
+      sendMail(message) {
+        return this.transporter.sendMail({
+          ...mailConfig.default,
+          ...message,
+        });
+      }
+    }
+    export default new Mail();
+    ```
+
+    - Recebendo os dados do provider no appointment? Fazendo include
+
+    ```javascript
+    const appointment = await Appointment.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: 'provider',
+          attributes: ['name', 'email'],
+        },
+      ],
+    });
+    ```
+
+    -Enviando email via controller
+
+    ```javascript
+    await Mail.sendMail({
+      to: `${appointment.provider.name} <${appointment.provider.email}>`,
+      subject: 'Agendamento cancelado',
+      text: 'Você tem um novo cancelamento',
+    });
+    ```
+
+  ### Perceba que as requisições com envio de email demoram mais que o normal, como normalizar?
+
+## Redis
+
+- O que é?
+- Quando usar?
+  _Os principais casos de uso do Redis incluem cache e gerenciamento de sessões._
+- Instalando o Redis via Docker
+  `docker run --name redisbarber -p 6379:6379 -d -t redis:alpine`
+- Instalando o BeeQueue - gerenciador de filas
+  `yarn add bee-queue`
+- Configurando a fila
+
+  - Crie um novo arquivo na pasta `lib` chamado `Queue.js`
+    ```javascript
+    import Bee from 'bee-queue';
+    import CancellationMail from '../app/jobs/CancellationMail';
+    const jobs = [CancellationMail];
+    import redisConfig from '../config/redis';
+    class Queue {
+      constructor() {
+        this.queues = {};
+        this.init();
+      }
+      init() {
+        jobs.forEach(({ key, handle }) => {
+          this.queues[key] = {
+            bee: new Bee(key, {
+              redis: redisConfig,
+            }),
+            handle,
+          };
+        });
+      }
+      add(queue, job) {
+        return this.queues[queue].bee.createJob(job).save();
+      }
+      processQueue() {
+        jobs.forEach(job => {
+          const { bee, handle } = this.queues[job.key];
+          bee.process(handle);
+        });
+      }
+    }
+    export default new Queue();
+    ```
+  - Crie uma nova pasta em `app` chamada `jobs` - armazenará os jobs do bee-queue
+
+    ```javascript
+    import Mail from '../../lib/Mail';
+    import pt from 'date-fns/locale/pt';
+    import { format } from 'date-fns';
+    class CancellationMail {
+      get key() {
+        return 'CancellationMail';
+      }
+      async handle({ data }) {
+        const { appointment } = data;
+        await Mail.sendMail({
+          to: `${appointment.provider.name} <${appointment.provider.email}>`,
+          subject: 'Agendamento cancelado',
+          template: 'cancellation',
+          context: {
+            provider: appointment.provider.name,
+            user: appointment.user.name,
+            date: format(appointment.date, "'dia' dd 'de' MMMM', às' H:mm'h'", {
+              locale: pt,
+            }),
+          },
+        });
+      }
+    }
+    export default new CancellationMail();
+    ```
+
+  - Invocando no controller
+    - Antes de retornar a resposta, execute: `Queue.add(CancellationMail.key, { appointment });`
+  - Executando independentemente da thread principal
+    - Crie um arquivo `queue.js` na pasta `src` com o seguinte corpo:
+      ```javascript
+      import Queue from './lib/Queue';
+      Queue.processQueue();
+      ```
+  - Lidando com falhas no job => escute por falhas com `.on('failed')`
+
+    ```javascript
+      processQueue() {
+        jobs.forEach(job => {
+          const { bee, handle } = this.queues[job.key];
+          bee.on('failed', this.handleFailure).process(handle);
+        });
+       }
+
+    ```
+
+## Listando os horários disponíveis
+
+- Crie uma rota que responda a requisição
+- Crie um controller que lista os horários disponíveis
+
 ## FIM
