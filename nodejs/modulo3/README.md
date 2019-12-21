@@ -928,4 +928,61 @@ export default new NotificationController();
 - Crie uma rota que responda a requisição
 - Crie um controller que lista os horários disponíveis
 
+## Sentry
+
+- Adicionando o Sentry: `yarn add @sentry/node@5.10.2`
+- No arquivo`src/app.js` faça as seguintes modificações
+
+```javascript
+import express from 'express';
+import routes from './routes';
+import path from 'path';
+import './database';
+import * as Sentry from '@sentry/node';
+import sentryConfig from './config/sentry';
+class App {
+  constructor() {
+    this.server = express();
+    Sentry.init(sentryConfig);
+    this.middlewares();
+    this.routes();
+  }
+
+  middlewares() {
+    this.server.use(Sentry.Handlers.requestHandler());
+
+    this.server.use(express.json());
+    this.server.use(
+      '/files',
+      express.static(path.resolve(__dirname, '..', 'tmp', 'uploads'))
+    );
+  }
+  routes() {
+    this.server.use(routes);
+    //antes das rotas
+    this.server.use(Sentry.Handlers.errorHandler());
+  }
+}
+export default new App().server;
+```
+
+- Erros ainda não irão pro Sentry, para isso devemos adicionar a seguinte lib: `yarn add express-async-errors` e importar no `app.js` como `import 'express-async-errors';`
+
+## Tratando as exceções
+
+- Crie um middleware de validação
+
+- Adicione lib `yarn add youch`
+- Crie o exception handler
+
+  ```javascript
+    exceptionHandler() {
+      this.server.use(async (err, req, res, next) => {
+        const errors = await new youch(err, req).toJSON();
+        return res.status(500).json(errors);
+    });
+  }
+
+  ```
+
 ## FIM
