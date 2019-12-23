@@ -64,39 +64,41 @@
 
 ### Configurando o Babel
 
-    - Crie o arquivo `babel.config.js`
+    - Crie o arquivo `babel.config.js` com o seguinte conteúdo
+
     ```javascript
-      module.exports = {
-        presets: [
-          "@babel/preset-env",
-          "@babel/preset-react"
-        ]
-      }
+        module.exports = {
+          presets: [
+            "@babel/preset-env",
+            "@babel/preset-react"
+          ]
+        }
     ```
 
 ### Configurando o Webpack
 
     - Crie o arquivo `webpack.config.js`
+
     ```javascript
-      const path = require('path')
-      module.exports = {
-        entry: path.resolve(__dirname, 'src','index.js'),
-        output: {
-          path: path.resolve(__dirname, 'public'),
-          filename: 'bundle.js'
-        },
-        module: {
-          rules: [
-            {
-              test:/\.js$/,
-              exlcude: /node_modules/,
-              use: {
-                loader: 'babel-loader'
+        const path = require('path')
+        module.exports = {
+          entry: path.resolve(__dirname, 'src','index.js'),
+          output: {
+            path: path.resolve(__dirname, 'public'),
+            filename: 'bundle.js'
+          },
+          module: {
+            rules: [
+              {
+                test:/\.js$/,
+                exlcude: /node_modules/,
+                use: {
+                  loader: 'babel-loader'
+                }
               }
-            }
-          ]
+            ]
+          }
         }
-      }
     ```
     - Para usar o loader, instale: `yarn add babel-loader -D`
 
