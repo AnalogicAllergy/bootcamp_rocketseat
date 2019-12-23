@@ -18,7 +18,7 @@ routes.post('/users', UserController.store);
 routes.post('/sessions', SessionController.store);
 // a partir de agora o authmiddleware é exec
 routes.use(authMiddleware);
-routes.put('/users', UserController.update);
+routes.put('/users', UserController.update); 
 
 //providers
 routes.get('/providers', ProviderController.index);
