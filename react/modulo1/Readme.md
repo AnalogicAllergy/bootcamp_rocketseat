@@ -173,28 +173,28 @@
 - Extendem `Component`
 - Devem ter um método `render` com um `return ()`
 - Exportam o próprio componente por _default_
-  ```
-    import React, {Component} from 'react'
-    class TechList extends Component {
-      render(){
-        return (
-          <ul>
-            <li>Node.js</li>
-            <li>React</li>
-            <li>React Native</li>
-          </ul>
-        )
-      }
+  ```javascript
+  import React, { Component } from "react";
+  class TechList extends Component {
+    render() {
+      return (
+        <ul>
+          <li>Node.js</li>
+          <li>React</li>
+          <li>React Native</li>
+        </ul>
+      );
     }
-    export default TechList
+  }
+  export default TechList;
   ```
 - Porquê usar componentes de classe?
   - Não era possível guardar estado fora de componentes de classe.
-  ```
-    state = {
-      abc: 0
-    }
-    this.setState({abc: 123})
+  ```javascript
+  state = {
+    abc: 0
+  };
+  this.setState({ abc: 123 });
   ```
   - Fazendo o Babel enxergar as propriedades de classe, como o estado fora do `constructor`: `yarn add @babel/plugin-proposal-class-properties -D`
   - Adicione o plugin na _config_ do Babel:
