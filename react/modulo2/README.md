@@ -53,7 +53,7 @@ import Repository from './pages/Repository';
 
 /**
     Se eu deixar a primeira rota sem o exact, todas as demais rotas renderizarão o component Main
-    Porquê? Porque para acessar /repository tem o / da rota main e assim por diante.  
+    Porquê? Porque para acessar /repository tem o / da rota main e assim por diante.
   * */
 export default function Routes() {
   return (
@@ -291,4 +291,70 @@ export const SubmitButton = styled.button.attrs({ type: 'submit' })`
   justify-content: center;
   align-items: center;
 `;
+```
+
+## Guardando os dados dos repositórios no LocalStorage
+
+```javascript
+    // load local storage
+  componentDidMount() {
+    const repositories = localStorage.getItem('repositories');
+    if (repositories) {
+      this.setState({
+        repositories: JSON.parse(repositories),
+      });
+    }
+  }
+
+  // salvar local storage
+  componentDidUpdate(_, prevState) {
+    const { repositories } = this.state;
+    if (prevState.repositories !== repositories) {
+      localStorage.setItem('repositories', JSON.stringify(repositories));
+    }
+  }
+```
+
+## Usando o component Link do `react-router-dom`
+
+- O Link é usado para abstrair a tag `a` do HTML
+- Para que o navegador não entenda a `/` do repositório como mais um caminho da URL, usamos a seguinte construção:
+  `<Link to={`/repository/\${encodeURIComponent(repository.name)}`}>`
+
+## Recebendo o parâmetro de repositório via URL
+
+- Recebemos da seguinte forma: `<Route path="/repository/:repository" component={Repository} />`
+- Capturando no componente Repository, via MATCH PARAMS - NÃO É PROPS OU REQ.BODY
+
+```js
+const { repository } = match.params;
+return (
+  <div>
+    <h1>{decodeURIComponent(repository)}</h1>
+  </div>
+);
+```
+
+## Fazendo as requisições a API
+
+- Issues e dados do repo, são independentes, podem rodar ao mesmo tempo
+
+```js
+const [repo, issues] = await Promise.all([
+  api.get(`/repos/${repoName}`),
+  api.get(`/repos/${repoName}/issues`),
+]);
+```
+
+## Criando as proptypes
+
+```javascript
+ static propTypes = {
+    match: PropTypes.shape({
+      params: PropTypes.shape({
+        repository: PropTypes.string,
+      }),
+    }).isRequired,
+  };
+
 ```
