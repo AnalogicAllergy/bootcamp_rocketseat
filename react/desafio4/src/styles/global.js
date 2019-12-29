@@ -6,7 +6,6 @@ const globalStyle = createGlobalStyle`
     padding: 0;
     outline: 0;
     box-sizing: border-box;
-    background: #f2f2f2; 
         
     
   }
@@ -15,6 +14,8 @@ const globalStyle = createGlobalStyle`
   }
   body {
     --webkit-font-smoothing: antialiased !important;
+        background: #f2f2f2; 
+
   }
   button {
     cursor: pointer;

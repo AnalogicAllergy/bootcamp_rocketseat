@@ -25,8 +25,9 @@ export const InfoUser = styled.div`
     background: #fff;
   }
   strong {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 600;
+    font-family: Helvetica, sans-serif;
   }
   small {
     font-size: 12px;
@@ -36,17 +37,20 @@ export const InfoUser = styled.div`
 export const Question = styled.p`
   margin-top: 15px;
   flex: 1;
-  font-size: 16px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  font-family: Helvetica, sans-serif;
   color: #333;
-  margin-bottom: 20px;
+  padding-bottom: 20px;
 `;
 export const PostStructure = styled.div`
   * {
     background: #fff;
   }
+  margin-top: 20px;
+  margin-left: 250px;
+  margin-right: 250px;
   width: 700px;
-  height: 250px;
+  height: auto;
 `;
 export const Divisor = styled.div`
   border-bottom: 1px solid #eee;

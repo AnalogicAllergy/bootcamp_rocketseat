@@ -15,6 +15,7 @@ export const Header = styled.header`
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
       Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     color: #fff;
+    padding: 15px;
   }
   svg {
     margin: 20px;

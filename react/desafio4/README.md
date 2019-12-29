@@ -1,7 +1,9 @@
-# Template de Projetos React com ESLint, Prettier, Babel pré-configurados.
+# Desafio 04 - React
 
-## How To
+## Proposta
 
-- Clone o repositório
-- yarn install
-- yarn start
+- Clonar a interface de Posts e Comments do Facebook
+
+## Resultado Final
+
+![](assets/facebook.png)
