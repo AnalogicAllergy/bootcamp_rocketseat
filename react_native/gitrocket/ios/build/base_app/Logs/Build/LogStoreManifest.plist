@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>10</integer>
+	<key>logs</key>
+	<dict>
+		<key>8F7B759E-A462-4307-B2B7-FD4EDEC5467C</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>8F7B759E-A462-4307-B2B7-FD4EDEC5467C.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>E</string>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>base_app project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>base_app</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building workspace base_app with scheme base_app and configuration Debug</string>
+			<key>timeStartedRecording</key>
+			<real>599578612.59227896</real>
+			<key>timeStoppedRecording</key>
+			<real>599578612.84106004</real>
+			<key>title</key>
+			<string>Building workspace base_app with scheme base_app and configuration Debug</string>
+			<key>uniqueIdentifier</key>
+			<string>8F7B759E-A462-4307-B2B7-FD4EDEC5467C</string>
+		</dict>
+	</dict>
+</dict>
+</plist>
