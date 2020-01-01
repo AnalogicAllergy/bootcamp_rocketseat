@@ -17,8 +17,8 @@ export const CommentContainer = styled.div`
 `;
 export const CommentBubble = styled.div`
   display: flex;
-  background: #333;
-  border-radius: 4px;
+  background: #eeeeee;
+  border-radius: 20px;
   flex-direction: row;
 
   strong {
