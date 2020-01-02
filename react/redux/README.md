@@ -540,11 +540,9 @@ export const { format: formatPrice } = new Intl.NumberFormat('pt-BR', {
     - Importe o função `connect` do `react-redux` no componente alvo
     - No fim do arquivo, faça com que o componente use `export default connect()(NomeDoComponente)` -> assegure-se de remover o `export default` da instanciação do componente
     - O connect pode receber parâmetros => uma função.
-  - Dispachando as actions
-
-        - Defina uma função que enviará as mudanças de estado para a `store` (no `onClick`, `onSubmit`).
-          `<button onClick={this.handleAddProduct}>`
-          e posteriormente, na função, dispare a action relativa aquela função.
+  - Despachando as actions - Defina uma função que enviará as mudanças de estado para a `store` (no `onClick`, `onSubmit`).
+    `<button onClick={this.handleAddProduct}>`
+    e posteriormente, na função, dispare a action relativa aquela função.
 
         ```javascript
         handleAddProduct = product => {
@@ -614,7 +612,7 @@ export const { format: formatPrice } = new Intl.NumberFormat('pt-BR', {
             <Cart to="/cart">
               <div>
                 <strong>Meu carrinho</strong>
-                <span>3 itens</span>
+                <span>{cart.length}</span>
               </div>
               <MdShoppingBasket size={34} color="#fff" />
             </Cart>
