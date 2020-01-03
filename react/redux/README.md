@@ -1,6 +1,6 @@
 # Arquitetura Flux
 
-![](/assets/screens/flux.png)
+![](/src/assets/screens/flux.png)
 
 **A store**
 
@@ -661,6 +661,6 @@ export default store;
   `'no-console': ['error', { allow: ['tron'] }],`
 
 **Reactotron**
-![Timelinme](assets/screens/tron1.png)
-![State Subscriptions](assets/screens/tron2.png)
-![Snapshot do State](assets/screens/tron3.png)
+![Timelinme](src/assets/screens/tron1.png)
+![State Subscriptions](src/assets/screens/tron2.png)
+![Snapshot do State](src/assets/screens/tron3.png)
