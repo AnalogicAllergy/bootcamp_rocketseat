@@ -1,6 +1,6 @@
 # Arquitetura Flux
 
-![Arquitetura](/src/assets/screens/flux.png)
+![Arquitetura](src/assets/screens/flux.png)
 
 **A store**
 
