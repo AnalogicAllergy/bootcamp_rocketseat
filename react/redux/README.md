@@ -52,7 +52,7 @@ Actions são responsáveis por requisitar algo para um reducer. Elas devem ser s
 - Carrinhos de compras :shopping_cart:
 - Player de música :musical_note:
 
-  ![](assets/screens/redux.png)
+  ![](src/assets/screens/redux.png)
 
 # Iniciando o Rocketshoes
 
@@ -661,6 +661,7 @@ export default store;
   `'no-console': ['error', { allow: ['tron'] }],`
 
 **Reactotron**
+
 ![Timelinme](src/assets/screens/tron1.png)
 ![State Subscriptions](src/assets/screens/tron2.png)
 ![Snapshot do State](src/assets/screens/tron3.png)
