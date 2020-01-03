@@ -541,51 +541,54 @@ export const { format: formatPrice } = new Intl.NumberFormat('pt-BR', {
     - No fim do arquivo, faça com que o componente use `export default connect()(NomeDoComponente)` -> assegure-se de remover o `export default` da instanciação do componente
     - O connect pode receber parâmetros => uma função.
   - Despachando as actions - Defina uma função que enviará as mudanças de estado para a `store` (no `onClick`, `onSubmit`).
-    `<button onClick={this.handleAddProduct}>`
-    e posteriormente, na função, dispare a action relativa aquela função.
 
-        ```javascript
-        handleAddProduct = product => {
-          /**
-           * qualquer componente que importa connect, tem uma nova prop chamada dispatch.
-           * E o que fazemos com o dispatch? Disparamos ACTIONS
-           *  */
-          const { dispatch } = this.props;
-          dispatch({
+    `<button onClick={this.handleAddProduct}>`
+
+    e posteriormente, na função, dispare a action relativa aquela função:
+
+    ```javascript
+    handleAddProduct = product => {
+      /**
+       * qualquer componente que importa connect, tem uma nova prop chamada dispatch.
+       * E o que fazemos com o dispatch? Disparamos ACTIONS
+       *  */
+      const { dispatch } = this.props;
+      dispatch({
+        type: 'ADD_TO_CART',
+        product,
+      });
+    };
+    ```
+
+    - Tenha em mente que esse `dispatch` direcionará para o reducer.
+    - TODA vez que um `dispatch` é disparado, TODOS os `reducers` escutam! Mas então, como saberemos que `reducer` tratará a nossa requisição?? **SIMPLES**!!!! Pela ACTION! :wink:
+    - Beleza então! Mas como temos acesso à Action? No construtor da função temos acesso a dois parâmetros padrão: o estado anterior da aplicação (`state`) e a action (`action`)
+
+      ```javascript
+      export default function cart(state, action) {
+        // a action contém o que foi enviado no dispatch do componente
+        /*
+          {
             type: 'ADD_TO_CART',
             product,
-          });
-        };
-        ```
+          }
+        */
+        return [];
+      }
+      ```
 
-        - Tenha em mente que esse `dispatch` direcionará para o reducer.
-        - TODA vez que um `dispatch` é disparado, TODOS os `reducers` escutam! Mas então, como saberemos que `reducer` tratará a nossa requisição?? **SIMPLES**!!!! Pela ACTION! :wink:
-        - Beleza então! Mas como temos acesso à Action? No construtor da função temos acesso a dois parâmetros padrão: o estado anterior da aplicação (`state`) e a action (`action`)
+      - Estrutura padrão de um `reducer`
 
-        ```javascript
-        export default function cart(state, action) {
-          // a action contém o que foi enviado no dispatch do componente
-          /*
-            {
-              type: 'ADD_TO_CART',
-              product,
-            }
-          */
-          return [];
-        }
-        ```
-
-        - Estrutura padrão de um `reducer`
-        ```javascript
-        export default function cart(state = [], action) {
-          switch (action.type) {
+      ```javascript
+      export default function cart(state = [], action) {
+        switch (action.type) {
           case 'ADD_TO_CART':
             return [...state, action.product];
           default:
             return state;
-          }
         }
-        ```
+      }
+      ```
 
     - Acessando dados do state em outros componentes
 
