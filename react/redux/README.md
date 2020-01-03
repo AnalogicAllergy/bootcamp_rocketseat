@@ -622,3 +622,45 @@ export const { format: formatPrice } = new Intl.NumberFormat('pt-BR', {
       ```
 
     - Toda vez que os dados do state mudarem, o componente será renderizado.
+
+## Redux e Reactotron
+
+- Instalando as dependências
+  `yarn add reactotron-react-js reactotron-redux`
+- Configurando o Reactotron: crie uma pasta `config` com um arquivo `ReactotronConfig.js` com o seguinte conteúdo
+
+```javascript
+import Reactotron from 'reactotron-react-js';
+import { reactotronRedux } from 'reactotron-redux';
+
+if (process.env.NODE_ENV === 'development') {
+  const tron = Reactotron.configure()
+    .use(reactotronRedux())
+    .connect();
+
+  tron.clear();
+
+  console.tron = tron;
+}
+```
+
+- Configurando na `index.js` da `store`
+
+```javascript
+import { createStore } from 'redux';
+import rootReducer from './modules/rootReducer';
+const enhancer =
+  process.env.NODE_ENV === 'development' ? console.tron.createEnhancer() : null;
+const store = createStore(rootReducer, enhancer);
+export default store;
+```
+
+- Agora é só importar a configuração do Reactortron do `App.js`
+  `import './config/ReactotronConfig';`
+- Regra no `eslintrc.js` para remover os erros dos `console.tron`
+  `'no-console': ['error', { allow: ['tron'] }],`
+
+**Reactotron**
+![Timelinme](assets/screens/tron1.png)
+![State Subscriptions](assets/screens/tron2.png)
+![Snapshot do State](assets/screens/tron3.png)
