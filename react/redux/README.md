@@ -665,6 +665,6 @@ export default store;
 
 **Reactotron**
 
-![Timelinme](src/assets/screens/tron1.png)
+![Timeline](src/assets/screens/tron1.png | height=250 )
 ![State Subscriptions](src/assets/screens/tron2.png)
 ![Snapshot do State](src/assets/screens/tron3.png)
