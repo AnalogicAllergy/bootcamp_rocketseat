@@ -1232,4 +1232,4 @@ export default all([
 
 ## Resultado Final
 
-![Aplicação Completa](/src/assets/screens/done.gif)
+![Aplicação Completa](src/assets/screens/done.gif)
