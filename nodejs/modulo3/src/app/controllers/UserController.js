@@ -1,10 +1,11 @@
-import User from '../models/User';
 import bcrypt from 'bcryptjs';
 import * as Yup from 'yup';
+import User from '../models/User';
+import File from '../models/File';
 
 class UserController {
   async store(req, res) {
-    //validação de dados
+    // validação de dados
     const schema = Yup.object().shape({
       name: Yup.string().required(),
       email: Yup.string()
@@ -74,12 +75,21 @@ class UserController {
     if (oldPassword && !isMatch) {
       return res.status(401).json({ error: 'Senhas não conferem' });
     }
-    const { id, name, provider } = await user.update(req.body);
+    await user.update(req.body);
+    const { id, name, avatar } = await user.findByPk(req.userId, {
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['id', 'path', 'url'],
+        },
+      ],
+    });
     return res.json({
       id,
       name,
       email,
-      provider,
+      avatar,
     });
   }
 }
